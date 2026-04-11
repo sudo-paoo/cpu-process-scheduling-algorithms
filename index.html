@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Process Scheduling</title>
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Manrope:wght@600;700;800&display=swap" />
+  <!-- Anime.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Main styles -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="brand-title">Scheduling Lab</span>
+      <span class="brand-subtitle">Simulation of Process Scheduling Algorithms</span>
+    </div>
+
+    <nav class="topbar-nav" aria-label="Primary">
+      <a class="nav-link nav-link-active" href="#">Dashboard</a>
+      <a class="nav-link" href="#">Algorithms</a>
+      <a class="nav-link" href="#">Docs</a>
+      <a class="nav-link" href="#">Help</a>
+    </nav>
+  </header>
+
+  <!-- App content -->
+  <main class="app-main">
+    <div class="app-shell">
+      <!-- Config panel -->
+      <aside class="panel config-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Configuration</h2>
+        </div>
+
+        <section class="config-section">
+          <div class="section-heading">
+            <span class="step-badge">1</span>
+            <span class="section-label">Algorithm</span>
+          </div>
+
+          <!-- Algorithm select -->
+          <label class="input-label" for="algorithm-select">Select Algorithm Branch</label>
+          <select id="algorithm-select" class="algo-select">
+            <option value="" selected>Choose one...</option>
+            <option value="FCFS">First Come, First Served</option>
+            <option value="SJF">Shortest Job First</option>
+            <option value="SRT">Shortest Remaining Time</option>
+            <option value="RR">Round Robin</option>
+            <option value="Priority">Priority Scheduling</option>
+            <option value="PriorityRR">Priority + Round Robin</option>
+          </select>
+
+          <!-- Quantum input -->
+          <div class="quantum-group hidden" id="quantum-container">
+            <label class="input-label" for="time-quantum">Time Quantum</label>
+            <input id="time-quantum" class="input-field" type="number" min="1" value="2" />
+          </div>
+
+          <!-- Priority mode -->
+          <div class="option-group hidden" id="priority-mode-container">
+            <p class="input-label">Priority Convention</p>
+            <label class="radio-row">
+              <input type="radio" name="priority-mode" value="lower-higher" checked />
+              <span>Lower value = Higher priority</span>
+            </label>
+            <label class="radio-row">
+              <input type="radio" name="priority-mode" value="higher-higher" />
+              <span>Higher value = Higher priority</span>
+            </label>
+          </div>
+
+          <!-- Preemption mode -->
+          <div class="option-group hidden" id="preemption-container">
+            <p class="input-label">Preemption Mode</p>
+            <label class="radio-row">
+              <input type="radio" name="preemption-mode" value="non-preemptive" checked />
+              <span>Non-preemptive</span>
+            </label>
+            <label class="radio-row">
+              <input type="radio" name="preemption-mode" value="preemptive" />
+              <span>Preemptive</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Process table -->
+        <section class="config-section">
+          <div class="section-heading section-heading-between">
+            <div class="section-heading-left">
+              <span class="step-badge">2</span>
+              <span class="section-label">Processes</span>
+            </div>
+
+            <div class="counter-control" role="group">
+              <!-- Remove process -->
+              <button class="counter-btn" id="btn-remove-process" type="button" aria-label="Remove process">-</button>
+              <span class="counter-value" id="process-count-display">3</span>
+              <!-- Add process -->
+              <button class="counter-btn" id="btn-add-process" type="button" aria-label="Add process">+</button>
+            </div>
+          </div>
+
+          <div class="process-table-wrap">
+            <table class="process-table" id="process-table">
+              <thead>
+                <tr>
+                  <th>PID</th>
+                  <th class="text-center">Arrival</th>
+                  <th class="text-center">Burst</th>
+                  <th class="text-center priority-header hidden">Priority</th>
+                </tr>
+              </thead>
+              <!-- Dynamic rows -->
+              <tbody id="process-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="panel-actions">
+          <!-- Run button -->
+          <button class="btn btn-primary btn-full" id="btn-run" type="button">Run Simulation</button>
+          <!-- Reset button -->
+          <button class="btn btn-secondary btn-full" id="btn-reset" type="button">Reset</button>
+        </div>
+      </aside>
+
+      <!-- Output panel -->
+      <section class="content-column">
+        <div class="panel simulation-empty" id="simulation-empty">
+          <h3 class="simulation-title">No simulation yet</h3>
+          <p class="simulation-text">Configure input, then run from an algorithm branch to render the Gantt chart and metrics.</p>
+        </div>
+
+        <!-- Gantt panel -->
+        <div class="panel gantt-panel hidden" id="gantt-panel">
+          <div class="panel-header gantt-panel-header">
+            <div class="gantt-header-left">
+              <h3 class="panel-title" id="gantt-algo-label">Gantt Chart</h3>
+            </div>
+            <button class="btn btn-secondary gantt-replay-btn" type="button" id="btn-replay">
+              <i data-lucide="rotate-ccw" class="icon-small" aria-hidden="true"></i>
+              Replay
+            </button>
+          </div>
+
+          <div class="gantt-body">
+            <div class="gantt-canvas-wrap">
+              <!-- Gantt bars -->
+              <div id="gantt-container" class="gantt"></div>
+              <!-- Time markers -->
+              <div id="gantt-time" class="gantt-time"></div>
+            </div>
+            <!-- Legend -->
+            <div class="gantt-legend" id="gantt-legend"></div>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <article class="panel metric-card metric-card-primary">
+            <p class="metric-label">Avg. Waiting Time</p>
+            <h4 class="metric-value metric-value-primary"><span id="avg-wt-display">-</span><span class="metric-unit"> ms</span></h4>
+          </article>
+          <article class="panel metric-card metric-card-tertiary">
+            <p class="metric-label">Avg. Turnaround Time</p>
+            <h4 class="metric-value metric-value-tertiary"><span id="avg-tat-display">-</span><span class="metric-unit"> ms</span></h4>
+          </article>
+        </div>
+
+        <div class="panel results-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">Statistical Breakdown</h3>
+          </div>
+
+          <div class="results-table-wrap">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Process</th>
+                  <th class="text-center">Arrival</th>
+                  <th class="text-center">Burst</th>
+                  <th class="text-center">CT</th>
+                  <th class="text-center">TAT</th>
+                  <th class="text-center">WT</th>
+                </tr>
+              </thead>
+              <!-- Result rows -->
+              <tbody id="results-tbody">
+                <tr>
+                  <td>-</td>
+                  <td class="text-center">-</td>
+                  <td class="text-center">-</td>
+                  <td class="text-center">-</td>
+                  <td class="text-center">-</td>
+                  <td class="text-center">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Snackbar -->
+  <div id="app-snackbar" class="snackbar" role="status" aria-live="polite" aria-atomic="true"></div>
+  
+  <!-- App script -->
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>
