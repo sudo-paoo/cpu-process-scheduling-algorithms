@@ -1,3 +1,4 @@
+// TODO: Add max limiter for burst and arrival inputs
 const MIN_PROCESSES = 3;
 const MAX_PROCESSES = 10;
 const ALGORITHM_NAMES = {
@@ -5,7 +6,7 @@ const ALGORITHM_NAMES = {
   SJF: 'Shortest Job First',
   SRT: 'Shortest Remaining Time',
   RR: 'Round Robin',
-  Priority: 'Priority Scheduling',
+  Priority: 'Priority',
   PriorityRR: 'Priority + Round Robin',
 };
 
