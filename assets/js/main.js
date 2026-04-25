@@ -1,6 +1,6 @@
-// TODO: Add max limiter for burst and arrival inputs
 const MIN_PROCESSES = 3;
 const MAX_PROCESSES = 10;
+const MAX_INPUT_VALUE = 100;
 const ALGORITHM_NAMES = {
   FCFS: 'First Come, First Served',
   SJF: 'Shortest Job First',
@@ -36,6 +36,11 @@ initTemplate();
 function initTemplate() {
   if (window.lucide?.createIcons) {
     window.lucide.createIcons();
+  }
+
+  const quantumInput = document.getElementById('time-quantum');
+  if (quantumInput) {
+    applyInputLimiter(quantumInput, 1);
   }
 
   // Default rows
@@ -130,8 +135,29 @@ function buildNumberInput(inputClass, value, min) {
   input.type = 'number';
   input.className = `process-input ${inputClass}`;
   input.value = String(value);
-  input.min = String(min);
+  applyInputLimiter(input, min);
   return input;
+}
+
+function applyInputLimiter(input, min) {
+  input.min = String(min);
+  input.max = String(MAX_INPUT_VALUE);
+
+  const clampValue = () => {
+    const parsed = Number.parseInt(input.value, 10);
+    if (Number.isNaN(parsed)) return;
+    if (parsed > MAX_INPUT_VALUE) {
+      showNotice(`Value cannot go past ${MAX_INPUT_VALUE}.`);
+      input.value = String(MAX_INPUT_VALUE);
+      return;
+    }
+    if (parsed < min) {
+      input.value = String(min);
+    }
+  };
+
+  input.addEventListener('input', clampValue);
+  input.addEventListener('change', clampValue);
 }
 
 function readProcessInputs() {
@@ -157,18 +183,23 @@ function validateInputs(processes, quantumRequired, quantum) {
 
     const arrivalInput = row.querySelector('.arrival-input');
     const burstInput = row.querySelector('.burst-input');
+    const priorityInput = row.querySelector('.priority-input');
 
-    if (Number.isNaN(p.arrival) || p.arrival < 0) {
+    if (Number.isNaN(p.arrival) || p.arrival < 0 || p.arrival > MAX_INPUT_VALUE) {
       arrivalInput?.classList.add('is-invalid');
       isValid = false;
     }
-    if (Number.isNaN(p.burst) || p.burst < 1) {
+    if (Number.isNaN(p.burst) || p.burst < 1 || p.burst > MAX_INPUT_VALUE) {
       burstInput?.classList.add('is-invalid');
+      isValid = false;
+    }
+    if (Number.isNaN(p.priority) || p.priority < 1 || p.priority > MAX_INPUT_VALUE) {
+      priorityInput?.classList.add('is-invalid');
       isValid = false;
     }
   });
 
-  if (quantumRequired && (Number.isNaN(quantum) || quantum < 1)) {
+  if (quantumRequired && (Number.isNaN(quantum) || quantum < 1 || quantum > MAX_INPUT_VALUE)) {
     document.getElementById('time-quantum')?.classList.add('is-invalid');
     isValid = false;
   }
