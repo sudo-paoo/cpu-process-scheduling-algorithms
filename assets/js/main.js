@@ -320,8 +320,19 @@ function renderResultsTable(results) {
   if (!tbody) return;
   tbody.innerHTML = '';
 
+  const displayResults = [...results].sort((a, b) => {
+    const aNum = Number.parseInt(String(a.pid).replace(/^P/i, ''), 10);
+    const bNum = Number.parseInt(String(b.pid).replace(/^P/i, ''), 10);
+
+    if (Number.isFinite(aNum) && Number.isFinite(bNum) && aNum !== bNum) {
+      return aNum - bNum;
+    }
+
+    return String(a.pid).localeCompare(String(b.pid), undefined, { numeric: true });
+  });
+
   // Result rows
-  results.forEach(p => {
+  displayResults.forEach(p => {
     const row = document.createElement('tr');
     row.appendChild(buildPidResultCell(p.pid));
     row.appendChild(buildTextCell(p.arrival));
