@@ -1,4 +1,5 @@
 function runSJF(processes) {
+	// Non-preemptive SJF with explicit idle periods.
 	const pending = processes.map((process) => ({ ...process, done: false }));
 	const ganttBlocks = [];
 	const results = [];
@@ -7,6 +8,7 @@ function runSJF(processes) {
 	let completed = 0;
 
 	while (completed < pending.length) {
+		// Re-evaluate the ready queue at each time step.
 		const ready = pending.filter((process) => !process.done && process.arrival <= currentTime);
 
 		if (ready.length === 0) {
@@ -66,6 +68,7 @@ function runSJF(processes) {
 /* bridge: main.js */
 const previousRunSelectedAlgorithmSJF = window.runSelectedAlgorithm;
 window.runSelectedAlgorithm = function runSelectedAlgorithm(input) {
+	// Chain algorithm handlers in load order.
 	if (input.algorithm === 'SJF') {
 		const mapped = input.processes.map((p) => ({
 			pid: p.pid,

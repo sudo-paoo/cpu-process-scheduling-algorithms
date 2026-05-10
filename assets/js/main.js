@@ -106,7 +106,7 @@ function addProcess() {
   const priorityCell = document.createElement('td');
   const showPriority = currentAlgorithm === 'Priority' || currentAlgorithm === 'PriorityRR';
   priorityCell.className = `process-cell priority-cell ${showPriority ? '' : 'hidden'}`.trim();
-  const priorityInput = buildNumberInput('priority-input', processCount, 1);
+  const priorityInput = buildNumberInput('priority-input', processCount, 0);
   priorityCell.appendChild(priorityInput);
 
   row.appendChild(pidCell);
@@ -144,6 +144,7 @@ function applyInputLimiter(input, min) {
   input.max = String(MAX_INPUT_VALUE);
 
   const clampValue = () => {
+    // Guard against invalid or out-of-range inputs on typing and blur.
     const parsed = Number.parseInt(input.value, 10);
     if (Number.isNaN(parsed)) return;
     if (parsed > MAX_INPUT_VALUE) {
@@ -167,7 +168,7 @@ function readProcessInputs() {
     pid: `P${index + 1}`,
     arrival: Number.parseInt(row.querySelector('.arrival-input')?.value ?? '0', 10) || 0,
     burst: Number.parseInt(row.querySelector('.burst-input')?.value ?? '1', 10) || 1,
-    priority: Number.parseInt(row.querySelector('.priority-input')?.value ?? '1', 10) || 1,
+    priority: Number.parseInt(row.querySelector('.priority-input')?.value ?? '0', 10) || 0,
   }));
 }
 
@@ -193,7 +194,7 @@ function validateInputs(processes, quantumRequired, quantum) {
       burstInput?.classList.add('is-invalid');
       isValid = false;
     }
-    if (Number.isNaN(p.priority) || p.priority < 1 || p.priority > MAX_INPUT_VALUE) {
+    if (Number.isNaN(p.priority) || p.priority < 0 || p.priority > MAX_INPUT_VALUE) {
       priorityInput?.classList.add('is-invalid');
       isValid = false;
     }
@@ -232,6 +233,7 @@ function runSimulation() {
     return;
   }
 
+  // Delegate to the algorithm bridge provided by the selected script.
   let result;
   try {
     result = window.runSelectedAlgorithm({
@@ -273,6 +275,7 @@ function renderGantt(ganttBlocks, results) {
   timeRow.innerHTML = '';
 
   const totalTime = Math.max(...ganttBlocks.map(b => b.end), 1);
+  const barsFragment = document.createDocumentFragment();
 
   ganttBlocks.forEach(block => {
     // Segment width
@@ -283,10 +286,13 @@ function renderGantt(ganttBlocks, results) {
     bar.className = `block ${getPidColorClass(block.pid)}`;
     bar.style.width = `${widthPercent}%`;
     bar.textContent = block.pid;
-    container.appendChild(bar);
+    barsFragment.appendChild(bar);
   });
 
+  container.appendChild(barsFragment);
+
   if (window.anime) {
+    // Animate width only when the animation library is present.
     anime({
       targets: '#gantt-container .block',
       width: ['0%', el => el.style.width],
@@ -296,6 +302,8 @@ function renderGantt(ganttBlocks, results) {
     });
   }
 
+  // Batch time marker inserts.
+  const timeFragment = document.createDocumentFragment();
   ganttBlocks.forEach(block => {
     // Start marker
     const marker = document.createElement('span');
@@ -303,7 +311,7 @@ function renderGantt(ganttBlocks, results) {
     marker.style.position = 'absolute';
     marker.style.left = `${(block.start / totalTime) * 100}%`;
     marker.style.transform = 'translateX(-50%)';
-    timeRow.appendChild(marker);
+    timeFragment.appendChild(marker);
   });
 
   const finalMarker = document.createElement('span');
@@ -312,7 +320,9 @@ function renderGantt(ganttBlocks, results) {
   finalMarker.style.position = 'absolute';
   finalMarker.style.left = '100%';
   finalMarker.style.transform = 'translateX(-50%)';
-  timeRow.appendChild(finalMarker);
+  timeFragment.appendChild(finalMarker);
+
+  timeRow.appendChild(timeFragment);
 
   renderGanttLegend(results, ganttBlocks.some(b => b.pid === 'IDLE'));
 }
@@ -321,6 +331,8 @@ function renderGanttLegend(results, hasIdle) {
   const legend = document.getElementById('gantt-legend');
   if (!legend) return;
   legend.innerHTML = '';
+
+  const legendFragment = document.createDocumentFragment();
 
   results.forEach(p => {
     const item = document.createElement('span');
@@ -331,7 +343,7 @@ function renderGanttLegend(results, hasIdle) {
     item.appendChild(dot);
 
     item.appendChild(document.createTextNode(p.pid));
-    legend.appendChild(item);
+    legendFragment.appendChild(item);
   });
 
   if (hasIdle) {
@@ -342,8 +354,10 @@ function renderGanttLegend(results, hasIdle) {
     idleDot.className = 'legend-dot pid-color-idle';
     idleItem.appendChild(idleDot);
     idleItem.appendChild(document.createTextNode('IDLE'));
-    legend.appendChild(idleItem);
+    legendFragment.appendChild(idleItem);
   }
+
+  legend.appendChild(legendFragment);
 }
 
 function renderResultsTable(results) {
@@ -351,6 +365,7 @@ function renderResultsTable(results) {
   if (!tbody) return;
   tbody.innerHTML = '';
 
+  // Keep result ordering stable by PID regardless of algorithm output.
   const displayResults = [...results].sort((a, b) => {
     const aNum = Number.parseInt(String(a.pid).replace(/^P/i, ''), 10);
     const bNum = Number.parseInt(String(b.pid).replace(/^P/i, ''), 10);
@@ -363,6 +378,8 @@ function renderResultsTable(results) {
   });
 
   // Result rows
+  const rowsFragment = document.createDocumentFragment();
+
   displayResults.forEach(p => {
     const row = document.createElement('tr');
     row.appendChild(buildPidResultCell(p.pid));
@@ -371,8 +388,10 @@ function renderResultsTable(results) {
     row.appendChild(buildTextCell(p.ct, true));
     row.appendChild(buildTextCell(p.tat, true));
     row.appendChild(buildTextCell(p.wt, true));
-    tbody.appendChild(row);
+    rowsFragment.appendChild(row);
   });
+
+  tbody.appendChild(rowsFragment);
 }
 
 function buildPidResultCell(pid) {
@@ -414,6 +433,7 @@ function renderMetrics(results) {
 function replayAnimation() {
   if (!lastResult) return;
   const btn = document.getElementById('btn-replay');
+  // Trigger a short CSS animation to indicate replay.
   btn?.classList.add('btn-replaying');
   setTimeout(() => btn?.classList.remove('btn-replaying'), 500);
   renderGantt(lastResult.ganttBlocks, lastResult.results);

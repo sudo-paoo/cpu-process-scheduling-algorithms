@@ -1,4 +1,5 @@
 function comparePriorityValue(a, b, priorityMode) {
+	// Normalize priority ordering based on user convention.
 	if (priorityMode === 'higher-higher') {
 		return b - a;
 	}
@@ -6,6 +7,7 @@ function comparePriorityValue(a, b, priorityMode) {
 }
 
 function runPriority(processes, priorityMode, preemptionMode) {
+	// Priority scheduling with optional preemption.
 	const ordered = [...processes].sort((a, b) => {
 		if (a.arrival !== b.arrival) return a.arrival - b.arrival;
 		return a.pid.localeCompare(b.pid, undefined, { numeric: true });
@@ -18,6 +20,7 @@ function runPriority(processes, priorityMode, preemptionMode) {
 	let currentTime = 0;
 	let completed = 0;
 
+	// Coalesce adjacent blocks for the same PID.
 	const appendBlock = (pid, start, end) => {
 		if (end <= start) return;
 		const last = ganttBlocks[ganttBlocks.length - 1];
@@ -28,6 +31,7 @@ function runPriority(processes, priorityMode, preemptionMode) {
 		ganttBlocks.push({ pid, start, end });
 	};
 
+	// Select the best candidate from currently ready processes.
 	const selectReady = () => {
 		const ready = ordered.filter((p) => p.arrival <= currentTime && (remaining.get(p.pid) ?? 0) > 0);
 		if (ready.length === 0) return null;
@@ -56,6 +60,7 @@ function runPriority(processes, priorityMode, preemptionMode) {
 			continue;
 		}
 
+		// Preemptive mode runs in single time units.
 		if (preemptionMode === 'preemptive') {
 			appendBlock(selected.pid, currentTime, currentTime + 1);
 			currentTime += 1;
@@ -97,6 +102,7 @@ function runPriority(processes, priorityMode, preemptionMode) {
 /* bridge: main.js */
 const previousRunSelectedAlgorithmPriority = window.runSelectedAlgorithm;
 window.runSelectedAlgorithm = function runSelectedAlgorithm(input) {
+	// Chain algorithm handlers in load order.
 	if (input.algorithm === 'Priority') {
 		const mapped = input.processes.map((p) => ({
 			pid: p.pid,
