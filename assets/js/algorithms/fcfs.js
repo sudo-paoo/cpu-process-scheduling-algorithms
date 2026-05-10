@@ -1,4 +1,5 @@
 function runFCFS(processes) {
+  // FCFS scheduling with idle gaps when no process is ready.
   const sorted = [...processes].sort((a, b) => {
     if (a.arrival !== b.arrival) return a.arrival - b.arrival;
     return a.pid.localeCompare(b.pid, undefined, { numeric: true });
@@ -47,6 +48,7 @@ function runFCFS(processes) {
 /* bridge: main.js */
 const previousRunSelectedAlgorithmFCFS = window.runSelectedAlgorithm;
 window.runSelectedAlgorithm = function runSelectedAlgorithm(input) {
+  // Chain algorithm handlers in load order.
   if (input.algorithm === 'FCFS') {
     const mapped = input.processes.map((p) => ({
       pid: p.pid,

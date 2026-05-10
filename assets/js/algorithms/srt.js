@@ -1,4 +1,5 @@
 function runSRT(processes) {
+	// Preemptive SRT schedules in single time quanta.
 	const ordered = [...processes].sort((a, b) => {
 		if (a.arrival !== b.arrival) return a.arrival - b.arrival;
 		return a.pid.localeCompare(b.pid, undefined, { numeric: true });
@@ -11,6 +12,7 @@ function runSRT(processes) {
 	let currentTime = 0;
 	let completed = 0;
 
+	// Coalesce adjacent blocks for the same PID.
 	const appendBlock = (pid, start, end) => {
 		if (end <= start) return;
 		const last = ganttBlocks[ganttBlocks.length - 1];
@@ -22,6 +24,7 @@ function runSRT(processes) {
 	};
 
 	while (completed < ordered.length) {
+		// Select from processes that have arrived and still need CPU time.
 		const ready = ordered.filter((p) => p.arrival <= currentTime && (remaining.get(p.pid) ?? 0) > 0);
 
 		if (ready.length === 0) {
@@ -76,6 +79,7 @@ function runSRT(processes) {
 /* bridge: main.js */
 const previousRunSelectedAlgorithmSRT = window.runSelectedAlgorithm;
 window.runSelectedAlgorithm = function runSelectedAlgorithm(input) {
+	// Chain algorithm handlers in load order.
 	if (input.algorithm === 'SRT') {
 		const mapped = input.processes.map((p) => ({
 			pid: p.pid,

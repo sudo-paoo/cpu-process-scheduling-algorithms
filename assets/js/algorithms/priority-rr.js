@@ -1,4 +1,5 @@
 function comparePriorityValuePriorityRR(a, b, priorityMode) {
+	// Normalize priority ordering based on user convention.
 	if (priorityMode === 'higher-higher') {
 		return b - a;
 	}
@@ -6,6 +7,7 @@ function comparePriorityValuePriorityRR(a, b, priorityMode) {
 }
 
 function runPriorityRR(processes, quantum, priorityMode) {
+	// Priority queues with round-robin time slicing per priority.
 	const q = Number.isFinite(quantum) && quantum > 0 ? Math.floor(quantum) : 1;
 	const ordered = [...processes].sort((a, b) => {
 		if (a.arrival !== b.arrival) return a.arrival - b.arrival;
@@ -22,6 +24,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 	let completed = 0;
 	let nextArrivalIndex = 0;
 
+	// Coalesce adjacent blocks for the same PID.
 	const appendBlock = (pid, start, end) => {
 		if (end <= start) return;
 		const last = ganttBlocks[ganttBlocks.length - 1];
@@ -32,6 +35,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 		ganttBlocks.push({ pid, start, end });
 	};
 
+	// Lazily create per-priority queues.
 	const getQueue = (priority) => {
 		if (!queueByPriority.has(priority)) {
 			queueByPriority.set(priority, []);
@@ -39,6 +43,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 		return queueByPriority.get(priority);
 	};
 
+	// Enqueue arrivals once; inQueue prevents duplicates.
 	const enqueueArrivals = () => {
 		while (nextArrivalIndex < ordered.length && ordered[nextArrivalIndex].arrival <= currentTime) {
 			const process = ordered[nextArrivalIndex];
@@ -50,6 +55,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 		}
 	};
 
+	// Pick highest-priority non-empty queue.
 	const pickBestPriority = () => {
 		const activePriorities = [];
 		queueByPriority.forEach((queue, priority) => {
@@ -62,6 +68,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 		return activePriorities[0];
 	};
 
+	// Check if a higher-priority queue is ready to preempt.
 	const hasHigherPriorityReady = (priority) => {
 		const bestPriority = pickBestPriority();
 		if (bestPriority === null) return false;
@@ -92,6 +99,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 		let ran = 0;
 		const maxSlice = Math.min(q, remainingBefore);
 
+		// Step through the slice to allow higher-priority arrivals to preempt.
 		while (ran < maxSlice && (remaining.get(current.pid) ?? 0) > 0) {
 			appendBlock(current.pid, currentTime, currentTime + 1);
 			currentTime += 1;
@@ -133,6 +141,7 @@ function runPriorityRR(processes, quantum, priorityMode) {
 /* bridge: main.js */
 const previousRunSelectedAlgorithmPriorityRR = window.runSelectedAlgorithm;
 window.runSelectedAlgorithm = function runSelectedAlgorithm(input) {
+	// Chain algorithm handlers in load order.
 	if (input.algorithm === 'PriorityRR') {
 		const mapped = input.processes.map((p) => ({
 			pid: p.pid,

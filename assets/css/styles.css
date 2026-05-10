@@ -52,6 +52,7 @@ body {
 }
 
 .hidden {
+	/* Utility to toggle visibility from JS. */
 	display: none !important;
 }
 
@@ -250,6 +251,7 @@ body {
 .process-input:focus,
 .counter-btn:focus-visible,
 	.btn:focus-visible {
+	/* Centralized focus style for accessible keyboard navigation. */
 	box-shadow: 0 0 0 2px rgba(0, 74, 198, 0.35);
 	outline: none;
 }
@@ -391,6 +393,7 @@ body {
 
 /* Snackbar */
 .snackbar {
+	/* Live region anchored to the viewport for validation feedback. */
 	position: fixed;
 	left: 50%;
 	bottom: 1.25rem;
@@ -486,6 +489,7 @@ body {
 }
 
 .gantt-canvas-wrap {
+	/* Allow horizontal scrolling for wide schedules. */
 	background: var(--surface-container-low);
 	border-radius: var(--radius-xl);
 	padding: var(--space-4) var(--space-4) var(--space-3);
@@ -503,6 +507,7 @@ body {
 
 /* Gantt segment */
 .block {
+	/* Each block represents a scheduled slice in the timeline. */
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -664,6 +669,7 @@ body {
 }
 
 @keyframes spin-once {
+	/* Replay icon spin tied to the replay button state. */
 	from { transform: rotate(0deg); }
 	to { transform: rotate(360deg); }
 }
@@ -687,6 +693,7 @@ body {
 
 /* Desktop breakpoint */
 @media (min-width: 900px) {
+	/* Two-column layout on larger screens. */
 	.app-shell {
 		grid-template-columns: minmax(320px, 1fr) minmax(0, 2fr);
 	}
@@ -703,6 +710,7 @@ body {
 }
 
 @media (max-width: 640px) {
+	/* Compact spacing for narrow viewports. */
 	.app-main {
 		padding: 5.5rem 1rem 2rem;
 	}

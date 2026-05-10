@@ -1,4 +1,5 @@
 function runRR(processes, quantum) {
+	// Round-robin scheduling with a fixed time slice.
 	const q = Number.isFinite(quantum) && quantum > 0 ? Math.floor(quantum) : 1;
 	const ordered = [...processes].sort((a, b) => {
 		if (a.arrival !== b.arrival) return a.arrival - b.arrival;
@@ -14,6 +15,7 @@ function runRR(processes, quantum) {
 	let completed = 0;
 	let nextArrivalIndex = 0;
 
+	// Coalesce adjacent blocks for the same PID.
 	const appendBlock = (pid, start, end) => {
 		if (end <= start) return;
 		const last = ganttBlocks[ganttBlocks.length - 1];
@@ -24,6 +26,7 @@ function runRR(processes, quantum) {
 		ganttBlocks.push({ pid, start, end });
 	};
 
+	// Enqueue arrivals that have reached the current time.
 	const enqueueArrivals = () => {
 		while (nextArrivalIndex < ordered.length && ordered[nextArrivalIndex].arrival <= currentTime) {
 			queue.push(ordered[nextArrivalIndex]);
@@ -48,6 +51,7 @@ function runRR(processes, quantum) {
 		const remainingBefore = remaining.get(current.pid) ?? 0;
 		if (remainingBefore <= 0) continue;
 
+		// Run for either the quantum or remaining burst, whichever is smaller.
 		const runFor = Math.min(q, remainingBefore);
 		const start = currentTime;
 		const end = currentTime + runFor;
@@ -85,6 +89,7 @@ function runRR(processes, quantum) {
 /* bridge: main.js */
 const previousRunSelectedAlgorithmRR = window.runSelectedAlgorithm;
 window.runSelectedAlgorithm = function runSelectedAlgorithm(input) {
+	// Chain algorithm handlers in load order.
 	if (input.algorithm === 'RR') {
 		const mapped = input.processes.map((p) => ({
 			pid: p.pid,
