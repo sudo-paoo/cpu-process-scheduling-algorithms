@@ -7,6 +7,9 @@ Video demonstration: https://drive.google.com/drive/folders/1PeCkKCMganw0TNYGHbm
 
 Documentation paper: [docs/FRANCO_KingPaoloD_BSCS3B.pdf](docs/FRANCO_KingPaoloD_BSCS3B.pdf)
 
+Presentation: https://drive.google.com/file/d/1LversQ96u6QomnmTxXq7XkAyIl0Y7Q0K/view?usp=sharing
+
+
 Live site: https://sudo-paoo.github.io/cpu-process-scheduling-algorithms/
 
 ## Algorithms Implemented
