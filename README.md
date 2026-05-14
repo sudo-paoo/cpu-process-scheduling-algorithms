@@ -3,7 +3,7 @@
 ## Overview
 A static web app that simulates common CPU scheduling algorithms and visualizes results for a set of processes. It simulates how an operating system schedules processes to run on the CPU using six different algorithms, making the scheduling behavior visible through dynamic Gantt charts and metric tables. 
 
-Video presentation: https://drive.google.com/drive/folders/1PeCkKCMganw0TNYGHbmdvV34UUQfYu7w?usp=drive_link
+Video presentation: [https://drive.google.com/drive/folders/1PeCkKCMganw0TNYGHbmdvV34UUQfYu7w?usp=drive_link](https://drive.google.com/file/d/1LversQ96u6QomnmTxXq7XkAyIl0Y7Q0K/view?usp=sharing)
 
 Documentation paper: [docs/FRANCO_KingPaoloD_BSCS3B.pdf](docs/FRANCO_KingPaoloD_BSCS3B.pdf)
 
