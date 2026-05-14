@@ -2,6 +2,7 @@
 
 A static web app that simulates common CPU scheduling algorithms and visualizes results for a set of processes.
 
+Presentation: https://drive.google.com/file/d/1LversQ96u6QomnmTxXq7XkAyIl0Y7Q0K/view?usp=sharing
 Live site: https://sudo-paoo.github.io/cpu-process-scheduling-algorithms/
 
 ## Features
